@@ -75,8 +75,8 @@ public enum CustomizeConfiguration {
      */
     public void loadForEnhance() {
         try {
-            for (Map<String, Object> configuration : resolver()) {
-                addContextEnhanceClass(configuration);
+            for (Map<String, Object> configuration : resolver()) { // 解析自定义增强配置
+                addContextEnhanceClass(configuration); // 缓存待增强方法
             }
         } catch (Exception e) {
             LOGGER.error("CustomizeConfiguration loadForAgent fail", e);
@@ -120,7 +120,7 @@ public enum CustomizeConfiguration {
                 return RESOLVED_FILE_CONFIGURATIONS;
             }
             List<Map<String, Object>> customizeMethods = new ArrayList<Map<String, Object>>();
-            File file = new File(CustomizePluginConfig.Plugin.Customize.ENHANCE_FILE);
+            File file = new File(CustomizePluginConfig.Plugin.Customize.ENHANCE_FILE); // 加载自定义配置
             if (file.exists() && file.isFile()) {
                 NodeList classNodeList = resolverFileClassDesc(file);
                 resolverClassNodeList(classNodeList, customizeMethods);

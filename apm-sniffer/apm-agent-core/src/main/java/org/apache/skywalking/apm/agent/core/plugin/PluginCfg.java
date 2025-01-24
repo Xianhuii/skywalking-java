@@ -46,6 +46,7 @@ public enum PluginCfg {
                     if (pluginDefine.trim().length() == 0 || pluginDefine.startsWith("#")) {
                         continue;
                     }
+                    // 创建插件信息
                     PluginDefine plugin = PluginDefine.build(pluginDefine);
                     pluginClassList.add(plugin);
                 } catch (IllegalPluginDefineException e) {

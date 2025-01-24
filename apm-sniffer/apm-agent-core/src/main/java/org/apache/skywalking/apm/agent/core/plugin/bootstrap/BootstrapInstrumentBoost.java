@@ -87,6 +87,10 @@ public class BootstrapInstrumentBoost {
     private static String STATIC_METHOD_V2_DELEGATE_TEMPLATE = "org.apache.skywalking.apm.agent.core.plugin.bootstrap.template.v2.StaticMethodInterV2Template";
     private static String STATIC_METHOD_V2_WITH_OVERRIDE_ARGS_DELEGATE_TEMPLATE = "org.apache.skywalking.apm.agent.core.plugin.bootstrap.template.v2.StaticMethodInterV2WithOverrideArgsTemplate";
 
+    /**
+     * 1、获取待增强类文件的字节码
+     * 2、使用bytebuddy进行注入
+     */
     public static AgentBuilder inject(PluginFinder pluginFinder, Instrumentation instrumentation,
         AgentBuilder agentBuilder, JDK9ModuleExporter.EdgeClasses edgeClasses) throws PluginException {
         Map<String, byte[]> classesTypeMap = new LinkedHashMap<>();

@@ -48,8 +48,9 @@ public class PluginBootstrap {
      * @return plugin definition list.
      */
     public List<AbstractClassEnhancePluginDefine> loadPlugins() throws AgentPackageNotFoundException {
-        AgentClassLoader.initDefaultLoader();
+        AgentClassLoader.initDefaultLoader(); // 初始化AgentClassLoader
 
+        // 获取skywalking-plugin.def文件
         PluginResourcesResolver resolver = new PluginResourcesResolver();
         List<URL> resources = resolver.getResources();
 
@@ -58,6 +59,7 @@ public class PluginBootstrap {
             return new ArrayList<AbstractClassEnhancePluginDefine>();
         }
 
+        // 读取自定义插件信息
         for (URL pluginUrl : resources) {
             try {
                 PluginCfg.INSTANCE.load(pluginUrl.openStream());
@@ -68,6 +70,7 @@ public class PluginBootstrap {
 
         List<PluginDefine> pluginClassList = PluginCfg.INSTANCE.getPluginClassList();
 
+        // 实例化AbstractClassEnhancePluginDefine
         List<AbstractClassEnhancePluginDefine> plugins = new ArrayList<AbstractClassEnhancePluginDefine>();
         for (PluginDefine pluginDefine : pluginClassList) {
             try {

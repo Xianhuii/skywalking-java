@@ -47,8 +47,8 @@ public class PluginDefine {
             throw new IllegalPluginDefineException(define);
         }
 
-        String pluginName = pluginDefine[0];
-        String defineClass = pluginDefine[1];
+        String pluginName = pluginDefine[0]; // 插件名称
+        String defineClass = pluginDefine[1]; // 插件定义类
         return new PluginDefine(pluginName, defineClass);
     }
 

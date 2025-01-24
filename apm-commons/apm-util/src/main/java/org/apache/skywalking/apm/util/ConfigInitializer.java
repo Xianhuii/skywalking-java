@@ -49,10 +49,10 @@ public class ConfigInitializer {
     private static void initNextLevel(Properties properties, Class<?> recentConfigType,
                                       ConfigDesc parentDesc) throws IllegalArgumentException, IllegalAccessException {
         for (Field field : recentConfigType.getFields()) {
-            if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
-                String configKey = (parentDesc + "." + field.getName()).toLowerCase();
+            if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) { // public static属性
+                String configKey = (parentDesc + "." + field.getName()).toLowerCase(); // 拼接前缀的key
                 Class<?> type = field.getType();
-                if (Map.class.isAssignableFrom(type)) {
+                if (Map.class.isAssignableFrom(type)) { // Map类型
                     /*
                      * Map config format is, config_key[map_key]=map_value, such as plugin.opgroup.resttemplate.rule[abc]=/url/path
                      * "config_key[]=" will generate an empty Map , user could use this mechanism to set an empty Map
@@ -77,12 +77,12 @@ public class ConfigInitializer {
                 } else if (properties.containsKey(configKey)) {
                     //In order to guarantee the default value could be reset as empty , we parse the value even if it's blank
                     String propertyValue = properties.getProperty(configKey, "");
-                    if (Collection.class.isAssignableFrom(type)) {
+                    if (Collection.class.isAssignableFrom(type)) { // Collection类型
                         ParameterizedType genericType = (ParameterizedType) field.getGenericType();
                         Type argumentType = genericType.getActualTypeArguments()[0];
                         Collection collection = convertToCollection(argumentType, type, propertyValue);
                         field.set(null, collection);
-                    } else {
+                    } else { // 其他基本类型
                         // Convert the value into real type
                         final Length lengthDefine = field.getAnnotation(Length.class);
                         if (lengthDefine != null) {
@@ -109,6 +109,7 @@ public class ConfigInitializer {
 
             }
         }
+        // 递归设置内部类的静态变量
         for (Class<?> innerConfiguration : recentConfigType.getClasses()) {
             parentDesc.append(innerConfiguration.getSimpleName());
             initNextLevel(properties, innerConfiguration, parentDesc);

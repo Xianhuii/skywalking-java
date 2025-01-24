@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+
 import org.apache.skywalking.apm.agent.core.boot.AgentPackageNotFoundException;
 import org.apache.skywalking.apm.agent.core.boot.AgentPackagePath;
 import org.apache.skywalking.apm.agent.core.logging.api.ILog;
@@ -69,11 +70,14 @@ public class SnifferConfigInitializer {
      */
     public static void initializeCoreConfig(String agentOptions) {
         AGENT_SETTINGS = new Properties();
-        try (final InputStreamReader configFileStream = loadConfig()) {
+        try (final InputStreamReader configFileStream = loadConfig()) { // 加载配置文件
             AGENT_SETTINGS.load(configFileStream);
             for (String key : AGENT_SETTINGS.stringPropertyNames()) {
                 String value = (String) AGENT_SETTINGS.get(key);
-                AGENT_SETTINGS.put(key, PropertyPlaceholderHelper.INSTANCE.replacePlaceholders(value, AGENT_SETTINGS));
+                AGENT_SETTINGS.put(
+                        key,
+                        PropertyPlaceholderHelper.INSTANCE.replacePlaceholders(value, AGENT_SETTINGS) // 递归解析占位符，例如：${name}
+                );
             }
 
         } catch (Exception e) {
@@ -81,12 +85,12 @@ public class SnifferConfigInitializer {
         }
 
         try {
-            overrideConfigBySystemProp();
+            overrideConfigBySystemProp(); // 使用skywalking.前缀的系统配置去覆盖配置
         } catch (Exception e) {
             LOGGER.error(e, "Failed to read the system properties.");
         }
 
-        agentOptions = StringUtil.trim(agentOptions, ',');
+        agentOptions = StringUtil.trim(agentOptions, ','); // 使用agent参数覆盖配置
         if (!StringUtil.isEmpty(agentOptions)) {
             try {
                 agentOptions = agentOptions.trim();
@@ -98,22 +102,22 @@ public class SnifferConfigInitializer {
             }
         }
 
-        initializeConfig(Config.class);
+        initializeConfig(Config.class); // 初始化配置：设置Config的静态变量（包括内部类）
         // reconfigure logger after config initialization
-        configureLogger();
+        configureLogger(); // 配置日志解析格式
         LOGGER = LogManager.getLogger(SnifferConfigInitializer.class);
 
-        setAgentVersion();
+        setAgentVersion(); // 设置agent版本
 
         if (StringUtil.isEmpty(Config.Agent.SERVICE_NAME)) {
             throw new ExceptionInInitializerError("`agent.service_name` is missing.");
         } else {
             if (StringUtil.isNotEmpty(Config.Agent.NAMESPACE) || StringUtil.isNotEmpty(Config.Agent.CLUSTER)) {
                 Config.Agent.SERVICE_NAME = StringUtil.join(
-                    SERVICE_NAME_PART_CONNECTOR,
-                    Config.Agent.SERVICE_NAME,
-                    Config.Agent.NAMESPACE,
-                    Config.Agent.CLUSTER
+                        SERVICE_NAME_PART_CONNECTOR,
+                        Config.Agent.SERVICE_NAME,
+                        Config.Agent.NAMESPACE,
+                        Config.Agent.CLUSTER
                 );
             }
         }
@@ -122,8 +126,8 @@ public class SnifferConfigInitializer {
         }
         if (Config.Plugin.PEER_MAX_LENGTH <= 3) {
             LOGGER.warn(
-                "PEER_MAX_LENGTH configuration:{} error, the default value of 200 will be used.",
-                Config.Plugin.PEER_MAX_LENGTH
+                    "PEER_MAX_LENGTH configuration:{} error, the default value of 200 will be used.",
+                    Config.Plugin.PEER_MAX_LENGTH
             );
             Config.Plugin.PEER_MAX_LENGTH = 200;
         }
@@ -145,9 +149,9 @@ public class SnifferConfigInitializer {
             ConfigInitializer.initialize(AGENT_SETTINGS, configClass);
         } catch (IllegalAccessException e) {
             LOGGER.error(e,
-                         "Failed to set the agent settings {}"
-                             + " to Config={} ",
-                         AGENT_SETTINGS, configClass
+                    "Failed to set the agent settings {}"
+                            + " to Config={} ",
+                    AGENT_SETTINGS, configClass
             );
         }
     }
@@ -243,9 +247,11 @@ public class SnifferConfigInitializer {
      * @return the config file {@link InputStream}, or null if not needEnhance.
      */
     private static InputStreamReader loadConfig() throws AgentPackageNotFoundException, ConfigNotFoundException {
-        String specifiedConfigPath = System.getProperty(SPECIFIED_CONFIG_PATH);
-        File configFile = StringUtil.isEmpty(specifiedConfigPath) ? new File(
-            AgentPackagePath.getPath(), DEFAULT_CONFIG_FILE_NAME) : new File(specifiedConfigPath);
+        String specifiedConfigPath = System.getProperty(SPECIFIED_CONFIG_PATH); // skywalking_config环境变量指定的配置地址
+        File configFile = StringUtil.isEmpty(specifiedConfigPath) ?
+                new File(AgentPackagePath.getPath(), DEFAULT_CONFIG_FILE_NAME) // 默认配置地址：/config/agent.config
+                :
+                new File(specifiedConfigPath);
 
         if (configFile.exists() && configFile.isFile()) {
             try {

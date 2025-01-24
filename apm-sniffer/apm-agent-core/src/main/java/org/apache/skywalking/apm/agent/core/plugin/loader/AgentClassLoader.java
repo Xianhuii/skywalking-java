@@ -109,6 +109,7 @@ public class AgentClassLoader extends ClassLoader {
                     }
                     data = baos.toByteArray();
                 }
+                // 加载类时会自动初始化@PluginConfig注解标记的配置
                 return processLoadedClass(defineClass(name, data, 0, data.length));
             } catch (IOException e) {
                 LOGGER.error(e, "find class fail.");
@@ -157,6 +158,7 @@ public class AgentClassLoader extends ClassLoader {
         };
     }
 
+    // 初始化PluginConfig标注的自定义配置
     private Class<?> processLoadedClass(Class<?> loadedClass) {
         final PluginConfig pluginConfig = loadedClass.getAnnotation(PluginConfig.class);
         if (pluginConfig != null) {

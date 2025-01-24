@@ -39,11 +39,11 @@ public enum ServiceManager {
     private Map<Class, BootService> bootedServices = Collections.emptyMap();
 
     public void boot() {
-        bootedServices = loadAllServices();
+        bootedServices = loadAllServices(); // 加载服务
 
-        prepare();
-        startup();
-        onComplete();
+        prepare(); // 准备
+        startup(); // 启动
+        onComplete(); // 启动完成
     }
 
     public void shutdown() {
@@ -59,17 +59,17 @@ public enum ServiceManager {
     private Map<Class, BootService> loadAllServices() {
         Map<Class, BootService> bootedServices = new LinkedHashMap<>();
         List<BootService> allServices = new LinkedList<>();
-        load(allServices);
+        load(allServices); // SPI加载BootService
         for (final BootService bootService : allServices) {
             Class<? extends BootService> bootServiceClass = bootService.getClass();
             boolean isDefaultImplementor = bootServiceClass.isAnnotationPresent(DefaultImplementor.class);
-            if (isDefaultImplementor) {
+            if (isDefaultImplementor) { // 默认实现
                 if (!bootedServices.containsKey(bootServiceClass)) {
                     bootedServices.put(bootServiceClass, bootService);
                 } else {
                     //ignore the default service
                 }
-            } else {
+            } else { // 覆盖实现
                 OverrideImplementor overrideImplementor = bootServiceClass.getAnnotation(OverrideImplementor.class);
                 if (overrideImplementor == null) {
                     if (!bootedServices.containsKey(bootServiceClass)) {

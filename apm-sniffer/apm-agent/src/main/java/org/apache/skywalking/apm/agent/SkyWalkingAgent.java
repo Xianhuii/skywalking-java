@@ -75,6 +75,15 @@ public class SkyWalkingAgent {
     public static void premain(String agentArgs, Instrumentation instrumentation) throws PluginException {
         final PluginFinder pluginFinder;
         try {
+            /*
+                加载agent配置
+                    1、如果指定配置路径，加载该路径的配置
+                    2、如果没有指定配置路径，则加载默认的/config/agent.config
+                配置优先级：
+                    1、配置文件
+                    2、系统环境变量
+                    3、 agent参数
+             */
             SnifferConfigInitializer.initializeCoreConfig(agentArgs);
         } catch (Exception e) {
             // try to resolve a new logger, and use the new logger to write the error log here
@@ -92,6 +101,14 @@ public class SkyWalkingAgent {
         }
 
         try {
+            /*
+                加载插件
+                    1、初始化AgentClassLoader
+                    2、加载skywalking-plugin.def
+                    3、读取自定义插件信息，创建PluginDefine
+                    4、实例化AbstractClassEnhancePluginDefine
+                    5、使用InstrumentationLoader机制，动态加载AbstractClassEnhancePluginDefine插件（例如：customize-enhance-plugin）
+             */
             pluginFinder = new PluginFinder(new PluginBootstrap().loadPlugins());
         } catch (AgentPackageNotFoundException ape) {
             LOGGER.error(ape, "Locate agent.jar failure. Shutting down.");
@@ -102,17 +119,20 @@ public class SkyWalkingAgent {
         }
 
         try {
+            // 增强类
             installClassTransformer(instrumentation, pluginFinder);
         } catch (Exception e) {
             LOGGER.error(e, "Skywalking agent installed class transformer failure.");
         }
 
         try {
+            // 启动服务（通常会启动后台线程定时任务，提供基础服务）
             ServiceManager.INSTANCE.boot();
         } catch (Exception e) {
             LOGGER.error(e, "Skywalking agent boot failure.");
         }
 
+        // 钩子：停止服务
         Runtime.getRuntime()
                .addShutdownHook(new Thread(ServiceManager.INSTANCE::shutdown, "skywalking service shutdown thread"));
     }

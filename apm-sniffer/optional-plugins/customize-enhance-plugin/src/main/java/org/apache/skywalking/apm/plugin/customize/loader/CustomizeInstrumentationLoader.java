@@ -48,6 +48,7 @@ public class CustomizeInstrumentationLoader implements InstrumentationLoader {
         try {
             for (String enhanceClass : enhanceClasses) {
                 String[] classDesc = CustomizeUtil.getClassDesc(enhanceClass);
+                // 实例化AbstractClassEnhancePluginDefine
                 AbstractClassEnhancePluginDefine plugin = (AbstractClassEnhancePluginDefine) Class.forName(Boolean.valueOf(classDesc[1]) ? CustomizeStaticInstrumentation.class
                     .getName() : CustomizeInstanceInstrumentation.class.getName(), true, classLoader)
                                                                                                   .getConstructor(String.class)

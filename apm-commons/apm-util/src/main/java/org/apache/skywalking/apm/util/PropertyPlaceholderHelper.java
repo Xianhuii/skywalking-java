@@ -126,25 +126,25 @@ public enum PropertyPlaceholderHelper {
 
         StringBuilder result = new StringBuilder(value);
 
-        int startIndex = value.indexOf(this.placeholderPrefix);
+        int startIndex = value.indexOf(this.placeholderPrefix); // ${的位置
         while (startIndex != -1) {
-            int endIndex = findPlaceholderEndIndex(result, startIndex);
+            int endIndex = findPlaceholderEndIndex(result, startIndex); // }的位置
             if (endIndex != -1) {
-                String placeholder = result.substring(startIndex + this.placeholderPrefix.length(), endIndex);
+                String placeholder = result.substring(startIndex + this.placeholderPrefix.length(), endIndex); // 获取占位符，即${}中的变量
                 String originalPlaceholder = placeholder;
                 if (!visitedPlaceholders.add(originalPlaceholder)) {
                     throw new IllegalArgumentException(
                         "Circular placeholder reference '" + originalPlaceholder + "' in property definitions");
                 }
                 // Recursive invocation, parsing placeholders contained in the placeholder key.
-                placeholder = parseStringValue(placeholder, placeholderResolver, visitedPlaceholders);
+                placeholder = parseStringValue(placeholder, placeholderResolver, visitedPlaceholders); // 递归解析占位符
                 // Now obtain the value for the fully resolved key...
-                String propVal = placeholderResolver.resolvePlaceholder(placeholder);
-                if (propVal == null && this.valueSeparator != null) {
+                String propVal = placeholderResolver.resolvePlaceholder(placeholder); // 获取占位符的实际值
+                if (propVal == null && this.valueSeparator != null) { // 若占位符包含默认值（:分隔），需要进一步拆分
                     int separatorIndex = placeholder.indexOf(this.valueSeparator);
                     if (separatorIndex != -1) {
-                        String actualPlaceholder = placeholder.substring(0, separatorIndex);
-                        String defaultValue = placeholder.substring(separatorIndex + this.valueSeparator.length());
+                        String actualPlaceholder = placeholder.substring(0, separatorIndex); // 获取实际占位符
+                        String defaultValue = placeholder.substring(separatorIndex + this.valueSeparator.length()); // 获取默认值
                         propVal = placeholderResolver.resolvePlaceholder(actualPlaceholder);
                         if (propVal == null) {
                             propVal = defaultValue;
@@ -154,8 +154,8 @@ public enum PropertyPlaceholderHelper {
                 if (propVal != null) {
                     // Recursive invocation, parsing placeholders contained in the
                     // previously resolved placeholder value.
-                    propVal = parseStringValue(propVal, placeholderResolver, visitedPlaceholders);
-                    result.replace(startIndex, endIndex + this.placeholderSuffix.length(), propVal);
+                    propVal = parseStringValue(propVal, placeholderResolver, visitedPlaceholders); // 递归解析占位符
+                    result.replace(startIndex, endIndex + this.placeholderSuffix.length(), propVal); // 替换占位符
                     startIndex = result.indexOf(this.placeholderPrefix, startIndex + propVal.length());
                 } else if (this.ignoreUnresolvablePlaceholders) {
                     // Proceed with unprocessed value.
@@ -169,7 +169,7 @@ public enum PropertyPlaceholderHelper {
                 startIndex = -1;
             }
         }
-        return result.toString();
+        return result.toString(); // 返回占位符解析后的值
     }
 
     private int findPlaceholderEndIndex(CharSequence buf, int startIndex) {
